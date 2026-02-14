@@ -1,5 +1,11 @@
 [workspace]
-members = ["flight-loader", "tools/simple-echo"]
+members = [
+    "flight-loader",
+    "sample-test/simple-echo",
+    "sample-test/flight-echo",
+    "sample-test/test-xdp",
+]
+exclude = ["flight-ebpf"]
 # flight-ebpf is NOT a workspace member.
 # It must be compiled separately for the bpfel-unknown-none target.
 # See build.sh for instructions.
@@ -7,7 +13,11 @@ members = ["flight-loader", "tools/simple-echo"]
 [package]
 name = "flight"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 pnet = "0.34.0"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+aya = "0.13"
+libc = "0.2"
