@@ -1,0 +1,13 @@
+[workspace]
+members = ["flight-loader", "tools/simple-echo"]
+# flight-ebpf is NOT a workspace member.
+# It must be compiled separately for the bpfel-unknown-none target.
+# See build.sh for instructions.
+
+[package]
+name = "flight"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+pnet = "0.34.0"
