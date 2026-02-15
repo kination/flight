@@ -31,6 +31,7 @@ pub struct Context {
     pub(crate) default_action: Action,
     pub(crate) rules: Vec<Rule>,
     pub(crate) port: u16,
+    pub(crate) iface: Option<String>,
 }
 
 impl Context {
@@ -40,6 +41,7 @@ impl Context {
             default_action: Action::Pass,
             rules: Vec::new(),
             port: 0,
+            iface: None,
         }
     }
 
@@ -51,7 +53,18 @@ impl Context {
         self.port = port;
     }
 
+    pub fn set_iface(&mut self, iface: &str) {
+        self.iface = Some(iface.to_string());
+    }
+
     pub fn add_rule(&mut self, rule: Rule) {
         self.rules.push(rule);
+    }
+
+    pub(crate) fn to_platform_config(&self) -> crate::platform::PlatformConfig {
+        crate::platform::PlatformConfig {
+            port: self.port,
+            iface: self.iface.clone(),
+        }
     }
 }
