@@ -20,14 +20,12 @@ WORKDIR /flight
 # Copy Cargo files for dependency caching
 COPY Cargo.toml Cargo.lock ./
 COPY flight-ebpf/Cargo.toml flight-ebpf/Cargo.toml
-COPY flight-loader/Cargo.toml flight-loader/Cargo.toml
 COPY sample-test/flight-echo/Cargo.toml sample-test/flight-echo/Cargo.toml
 
 # Create dummy sources to cache dependencies
 RUN mkdir -p src && echo "" > src/lib.rs \
     && mkdir -p src/platform && echo "" > src/platform/mod.rs \
     && mkdir -p flight-ebpf/src && echo '#![no_std] #![no_main] #[panic_handler] fn p(_:&core::panic::PanicInfo)->!{loop{}}' > flight-ebpf/src/main.rs \
-    && mkdir -p flight-loader/src && echo "fn main(){}" > flight-loader/src/main.rs \
     && mkdir -p sample-test/flight-echo/src && echo "fn main(){}" > sample-test/flight-echo/src/main.rs
 
 # Build dependencies only (both for userspace and eBPF if possible, though eBPF usually needs special flags)
@@ -35,7 +33,7 @@ RUN mkdir -p src && echo "" > src/lib.rs \
 RUN cargo build --workspace --release || true
 
 # Clean up dummy sources
-RUN rm -rf src flight-ebpf/src flight-loader/src sample-test/flight-echo/src
+RUN rm -rf src flight-ebpf/src sample-test/flight-echo/src
 
 # Copy actual source code
 COPY . .
@@ -48,9 +46,6 @@ RUN cd flight-ebpf && cargo +nightly build \
     --target bpfel-unknown-none \
     -Z build-std=core \
     --release
-
-# Build userspace loader (flight-loader)
-RUN cargo build --package flight-loader --release
 
 # Build echo tool (flight-echo)
 RUN cargo build --package flight-echo --release

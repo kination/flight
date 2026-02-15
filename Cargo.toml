@@ -1,8 +1,5 @@
 [workspace]
-members = [
-    "flight-loader",
-    "sample-test/flight-echo",
-]
+members = ["sample-test/flight-echo"]
 exclude = ["flight-ebpf"]
 # flight-ebpf is NOT a workspace member.
 # It must be compiled separately for the bpfel-unknown-none target.
