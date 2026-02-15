@@ -1,9 +1,7 @@
 [workspace]
 members = [
     "flight-loader",
-    "sample-test/simple-echo",
     "sample-test/flight-echo",
-    "sample-test/test-xdp",
 ]
 exclude = ["flight-ebpf"]
 # flight-ebpf is NOT a workspace member.
