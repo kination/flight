@@ -1,0 +1,19 @@
+services:
+  flight:
+    build:
+      context: ..
+      dockerfile: sample-test/Dockerfile
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - BPF
+      - NET_RAW
+    ports:
+      - "9000:9000/udp"
+    ulimits:
+      memlock: -1  # Required for eBPF map memory
+    volumes:
+      - /sys/fs/bpf:/sys/fs/bpf
+    # CMD from Dockerfile will be used:
+    # /app/flight-echo server --port 9000 --iface eth0
