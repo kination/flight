@@ -11,6 +11,7 @@ pub(crate) mod linux;
 pub struct PlatformConfig {
     pub port: u16,
     pub iface: Option<String>,
+    pub skb_mode: bool,
 }
 
 pub trait PlatformBackend: Sized {

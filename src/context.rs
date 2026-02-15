@@ -32,6 +32,7 @@ pub struct Context {
     pub(crate) rules: Vec<Rule>,
     pub(crate) port: u16,
     pub(crate) iface: Option<String>,
+    pub(crate) skb_mode: bool,
 }
 
 impl Context {
@@ -42,6 +43,7 @@ impl Context {
             rules: Vec::new(),
             port: 0,
             iface: None,
+            skb_mode: true,
         }
     }
 
@@ -57,6 +59,10 @@ impl Context {
         self.iface = Some(iface.to_string());
     }
 
+    pub fn set_skb_mode(&mut self, skb_mode: bool) {
+        self.skb_mode = skb_mode;
+    }
+
     pub fn add_rule(&mut self, rule: Rule) {
         self.rules.push(rule);
     }
@@ -65,6 +71,7 @@ impl Context {
         crate::platform::PlatformConfig {
             port: self.port,
             iface: self.iface.clone(),
+            skb_mode: self.skb_mode,
         }
     }
 }
