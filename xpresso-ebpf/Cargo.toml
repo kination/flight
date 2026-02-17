@@ -1,10 +1,10 @@
 [package]
-name = "flight-ebpf"
+name = "xpresso-ebpf"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "flight-redirect"
+name = "xpresso-redirect"
 path = "src/main.rs"
 
 [dependencies]

@@ -1,6 +1,6 @@
-# Flight (work in progress)
+# Xpresso (work in progress)
 
-Flight is a high-performance kernel-bypass networking library built with Rust. It provides a simple `Context → Program → send/recv` API, with goal of supporting XDP/AF_XDP on Linux and Skywalk(or BPF?) on macOS.
+Xpresso is a high-performance kernel-bypass networking library built with Rust. It provides a simple `Context → Program → send/recv` API, with goal of supporting XDP/AF_XDP on Linux and Skywalk(or BPF?) on macOS.
 
 Currently uses a UDP socket fallback backend, so examples run on any OS without root.
 
@@ -25,10 +25,10 @@ For quick logic testing on macOS/Linux without root/XDP:
 
 ```bash
 # Server
-cargo run -p flight-echo -- server --port 9000
+cargo run -p xpresso-echo -- server --port 9000
 
 # Client
-cargo run -p flight-echo -- client --server 127.0.0.1:9000 --message "hello flight"
+cargo run -p xpresso-echo -- client --server 127.0.0.1:9000 --message "hello xpresso"
 ```
 
 ### 2. Run XDP Mode (Docker/OrbStack)
@@ -42,14 +42,14 @@ cd sample-test
 docker compose up --build -d
 
 # Check logs to confirm XDP attachment
-docker compose logs -f flight
-# Output should contain: "[flight] AF_XDP: iface=eth0 ... attached on ..."
+docker compose logs -f xpresso
+# Output should contain: "[xpresso] AF_XDP: iface=eth0 ... attached on ..."
 ```
 
 ## API Usage
 
 ```rust
-use flight::{Context, Mode, Program};
+use xpresso::{Context, Mode, Program};
 
 // 1. Configure
 let mut ctx = Context::new(Mode::Echo);
@@ -70,10 +70,9 @@ println!("{}", prog.stats());
 ## Project Structure
 
 ```
-flight/
+xpresso/
 ├── src/              # Core library (Context, Program, Stats)
-├── flight-ebpf/      # XDP eBPF program (Linux, compiled separately)
-├── flight-loader/    # XDP loader (Linux only)
-└── sample-test/
-    └── flight-echo/  # Echo server/client example
+├── xpresso-ebpf/     # XDP eBPF program (Linux, compiled separately)
+├── sample-test/
+    └── xpresso-echo/ # Echo server/client example
 ```

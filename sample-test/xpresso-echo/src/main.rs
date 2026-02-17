@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use flight::{Context, FlightError, Mode, Program};
+use xpresso::{Context, FlightError, Mode, Program};
 
 #[derive(Parser)]
 #[command(about = "Flight echo example - server/client data exchange")]

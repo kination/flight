@@ -1,5 +1,5 @@
 services:
-  flight:
+  xpresso:
     build:
       context: ..
       dockerfile: sample-test/Dockerfile
@@ -16,4 +16,4 @@ services:
     volumes:
       - /sys/fs/bpf:/sys/fs/bpf
     # CMD from Dockerfile will be used:
-    # /app/flight-echo server --port 9000 --iface eth0
+    # /app/xpresso-echo server --port 9000 --iface eth0

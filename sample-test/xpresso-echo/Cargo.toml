@@ -1,8 +1,8 @@
 [package]
-name = "flight-echo"
+name = "xpresso-echo"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-flight = { path = "../../" }
+xpresso = { path = "../../" }
 clap = { version = "4", features = ["derive"] }

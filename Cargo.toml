@@ -1,12 +1,12 @@
 [workspace]
-members = ["sample-test/flight-echo"]
-exclude = ["flight-ebpf"]
-# flight-ebpf is NOT a workspace member.
+members = ["sample-test/xpresso-echo"]
+exclude = ["xpresso-ebpf"]
+# xpresso-ebpf is NOT a workspace member.
 # It must be compiled separately for the bpfel-unknown-none target.
 # See build.sh for instructions.
 
 [package]
-name = "flight"
+name = "xpresso"
 version = "0.1.0"
 edition = "2021"
 

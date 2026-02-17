@@ -12,7 +12,7 @@ use aya_ebpf::{
 static XSK_MAP: XskMap = XskMap::with_max_entries(64, 0);
 
 #[xdp]
-pub fn flight_redirect(ctx: XdpContext) -> u32 {
+pub fn xpresso_redirect(ctx: XdpContext) -> u32 {
     match try_redirect(&ctx) {
         Ok(action) => action,
         Err(_) => xdp_action::XDP_PASS,

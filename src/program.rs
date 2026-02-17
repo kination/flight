@@ -27,7 +27,7 @@ impl Program {
         let backend = NativeBackend::bind(&config)?;
 
         let local = backend.local_addr()?;
-        println!("[flight] attached on {local} (mode: {:?})", self.context.mode);
+        println!("[xpresso] attached on {local} (mode: {:?})", self.context.mode);
 
         self.backend = Some(backend);
         Ok(())
@@ -83,7 +83,7 @@ impl Program {
         if let Some(mut backend) = self.backend.take() {
             let addr = backend.local_addr()?;
             backend.close()?;
-            println!("[flight] detached from {addr}");
+            println!("[xpresso] detached from {addr}");
         }
         Ok(())
     }
