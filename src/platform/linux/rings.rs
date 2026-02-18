@@ -15,12 +15,14 @@ pub struct Ring {
 impl Ring {
     /// mmap된 메모리 베이스와 ring offset 정보로 Ring을 초기화한다.
     pub unsafe fn from_mmap(base: *mut u8, offsets: &XdpRingOffset, size: u32) -> Self {
-        Self {
-            producer: base.add(offsets.producer as usize) as *mut AtomicU32,
-            consumer: base.add(offsets.consumer as usize) as *mut AtomicU32,
-            ring_base: base.add(offsets.desc as usize),
-            size,
-            mask: size - 1,
+        unsafe {
+            Self {
+                producer: base.add(offsets.producer as usize) as *mut AtomicU32,
+                consumer: base.add(offsets.consumer as usize) as *mut AtomicU32,
+                ring_base: base.add(offsets.desc as usize),
+                size,
+                mask: size - 1,
+            }
         }
     }
 
@@ -42,7 +44,7 @@ pub struct FillRing {
 impl FillRing {
     pub unsafe fn new(base: *mut u8, offsets: &XdpRingOffset, size: u32) -> Self {
         Self {
-            ring: Ring::from_mmap(base, offsets, size),
+            ring: unsafe { Ring::from_mmap(base, offsets, size) },
         }
     }
 
@@ -82,7 +84,7 @@ pub struct CompletionRing {
 
 impl CompletionRing {
     pub unsafe fn new(base: *mut u8, offsets: &XdpRingOffset, size: u32) -> Self {
-        let ring = Ring::from_mmap(base, offsets, size);
+        let ring = unsafe { Ring::from_mmap(base, offsets, size) };
         let cached_cons = ring.consumer_val();
         Self { ring, cached_cons }
     }
@@ -114,7 +116,7 @@ pub struct RxRing {
 
 impl RxRing {
     pub unsafe fn new(base: *mut u8, offsets: &XdpRingOffset, size: u32) -> Self {
-        let ring = Ring::from_mmap(base, offsets, size);
+        let ring = unsafe { Ring::from_mmap(base, offsets, size) };
         let cached_cons = ring.consumer_val();
         Self { ring, cached_cons }
     }
@@ -146,7 +148,7 @@ pub struct TxRing {
 impl TxRing {
     pub unsafe fn new(base: *mut u8, offsets: &XdpRingOffset, size: u32) -> Self {
         Self {
-            ring: Ring::from_mmap(base, offsets, size),
+            ring: unsafe { Ring::from_mmap(base, offsets, size) },
         }
     }
 
