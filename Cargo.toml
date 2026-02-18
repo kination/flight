@@ -7,11 +7,12 @@ exclude = ["xpresso-ebpf"]
 
 [package]
 name = "xpresso"
-version = "0.1.0"
-edition = "2021"
+version = "0.0.1"
+edition = "2024"
 
 [dependencies]
 pnet = "0.34.0"
+serde = { version = "1.0.228", features = ["derive"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 aya = "0.13"

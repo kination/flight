@@ -1,9 +1,13 @@
 use clap::{Parser, Subcommand};
+use std::fs;
 use xpresso::{Context, FlightError, Mode, Program};
 
 #[derive(Parser)]
 #[command(about = "Flight echo example - server/client data exchange")]
 struct Cli {
+    #[arg(long)]
+    config: Option<String>,
+
     #[command(subcommand)]
     command: Command,
 }
@@ -11,15 +15,15 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     Server {
-        #[arg(short, long, default_value = "9000")]
-        port: u16,
+        #[arg(short, long)]
+        port: Option<u16>,
 
         #[arg(short, long)]
         iface: Option<String>,
     },
     Client {
-        #[arg(short, long, default_value = "127.0.0.1:9000")]
-        server: String,
+        #[arg(short, long)]
+        server: Option<String>,
 
         #[arg(short, long, default_value = "Hello")]
         message: String,
@@ -29,20 +33,37 @@ enum Command {
 fn main() -> Result<(), FlightError> {
     let cli = Cli::parse();
 
+    let mut ctx = if let Some(path) = &cli.config {
+        let content = fs::read_to_string(path).map_err(|e| FlightError::Io(e))?;
+        toml::from_str(&content).map_err(|e| FlightError::Bind(format!("config error: {e}")))?
+    } else {
+        Context::new(Mode::Echo)
+    };
+
     match cli.command {
-        Command::Server { port, iface } => run_server(port, iface),
-        Command::Client { server, message } => run_client(&server, &message),
+        Command::Server { port, iface } => {
+            if let Some(p) = port {
+                ctx.set_port(p);
+            } else if ctx.port() == 0 {
+                ctx.set_port(9000); // Default if not in config nor CLI
+            }
+
+            if let Some(i) = iface {
+                ctx.set_iface(&i);
+            }
+
+            run_server(ctx)
+        }
+        Command::Client { server, message } => {
+            // Client mode doesn't need to listen necessarily, but Context is used for Program.
+            // Client uses `ctx` for `Program`, typically port 0 (ephemeral).
+            // `server` arg is destination.
+            run_client(ctx, server.as_deref(), &message)
+        }
     }
 }
 
-fn run_server(port: u16, iface: Option<String>) -> Result<(), FlightError> {
-    let mut ctx = Context::new(Mode::Echo);
-    ctx.set_port(port);
-
-    if let Some(iface_name) = iface {
-        ctx.set_iface(&iface_name);
-    }
-
+fn run_server(ctx: Context) -> Result<(), FlightError> {
     let mut prog = Program::with_context(ctx)?;
     prog.attach()?;
 
@@ -54,22 +75,30 @@ fn run_server(port: u16, iface: Option<String>) -> Result<(), FlightError> {
     loop {
         let (from, n) = prog.recv(&mut buf)?;
         let data = &buf[..n];
-        println!("[server] {} -> {} bytes: {:?}", from, n, String::from_utf8_lossy(data));
+        println!(
+            "[server] {} -> {} bytes: {:?}",
+            from,
+            n,
+            String::from_utf8_lossy(data)
+        );
         println!("[server] echoed back to {from}");
         println!("[server] {}", prog.stats());
     }
 }
 
-fn run_client(server: &str, message: &str) -> Result<(), FlightError> {
-    let mut ctx = Context::new(Mode::Echo);
-    ctx.set_port(0);
+fn run_client(ctx: Context, server: Option<&str>, message: &str) -> Result<(), FlightError> {
+    // If not specified, client binds to ephemeral port (0)
+    if ctx.port() == 0 {
+        // keep 0
+    }
 
     let mut prog = Program::with_context(ctx)?;
     prog.attach()?;
 
-    let dest: std::net::SocketAddr = server
+    let server_addr = server.unwrap_or("127.0.0.1:9000");
+    let dest: std::net::SocketAddr = server_addr
         .parse()
-        .map_err(|e| FlightError::Send(format!("invalid address '{server}': {e}")))?;
+        .map_err(|e| FlightError::Send(format!("invalid address '{server_addr}': {e}")))?;
 
     println!("[client] sending to {dest}: {message:?}");
     let sent = prog.send(&dest, message.as_bytes())?;

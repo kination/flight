@@ -1,18 +1,23 @@
 use std::os::unix::io::RawFd;
 
-use aya::programs::{Xdp, XdpFlags};
 use aya::Ebpf;
+use aya::programs::{Xdp, XdpFlags};
 
 use crate::error::FlightError;
 
 /// 컴파일된 eBPF XDP 바이너리 (include_bytes!로 임베드)
 #[repr(C, align(8))]
 struct AlignedBpf {
-    data: [u8; include_bytes!("../../../xpresso-ebpf/target/bpfel-unknown-none/release/xpresso-redirect").len()],
+    data: [u8; include_bytes!(
+        "../../../xpresso-ebpf/target/bpfel-unknown-none/release/xpresso-redirect"
+    )
+    .len()],
 }
 
 static XPRESSO_XDP_BPF_ALIGNED: AlignedBpf = AlignedBpf {
-    data: *include_bytes!("../../../xpresso-ebpf/target/bpfel-unknown-none/release/xpresso-redirect"),
+    data: *include_bytes!(
+        "../../../xpresso-ebpf/target/bpfel-unknown-none/release/xpresso-redirect"
+    ),
 };
 
 static XPRESSO_XDP_BPF: &[u8] = &XPRESSO_XDP_BPF_ALIGNED.data;

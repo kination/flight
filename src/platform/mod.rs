@@ -12,6 +12,7 @@ pub struct PlatformConfig {
     pub port: u16,
     pub iface: Option<String>,
     pub skb_mode: bool,
+    pub bind_ip: Option<String>,
 }
 
 pub trait PlatformBackend: Sized {

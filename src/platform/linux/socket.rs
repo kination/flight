@@ -1,9 +1,9 @@
 use std::os::unix::io::RawFd;
 
-use crate::error::FlightError;
 use super::consts::*;
 use super::rings::*;
 use super::umem::Umem;
+use crate::error::FlightError;
 
 /// AF_XDP 소켓 래퍼. 소켓 생성, UMEM 등록, ring 매핑, 인터페이스 바인딩을 담당한다.
 pub struct XskSocket {

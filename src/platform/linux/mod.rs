@@ -9,8 +9,8 @@ mod xdp_prog;
 use std::cell::UnsafeCell;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
-use crate::error::FlightError;
 use super::{PlatformBackend, PlatformConfig};
+use crate::error::FlightError;
 
 use consts::*;
 use frame_alloc::FrameAllocator;
@@ -102,11 +102,13 @@ impl PlatformBackend for AfXdpBackend {
         let frame_size = DEFAULT_FRAME_SIZE as usize;
 
         // 1. 인터페이스 정보
-        let ifindex = unsafe { libc::if_nametoindex(
-            std::ffi::CString::new(iface)
-                .map_err(|e| FlightError::Bind(format!("invalid iface name: {e}")))?
-                .as_ptr()
-        ) };
+        let ifindex = unsafe {
+            libc::if_nametoindex(
+                std::ffi::CString::new(iface)
+                    .map_err(|e| FlightError::Bind(format!("invalid iface name: {e}")))?
+                    .as_ptr(),
+            )
+        };
         if ifindex == 0 {
             return Err(FlightError::Bind(format!(
                 "interface '{iface}' not found: {}",
@@ -115,15 +117,25 @@ impl PlatformBackend for AfXdpBackend {
         }
 
         let src_mac = Self::read_iface_mac(iface)?;
-        let src_ip = Self::read_iface_ip(iface)?;
+        let src_ip = if let Some(ip_str) = config.bind_ip.as_deref() {
+            ip_str
+                .parse()
+                .map_err(|e| FlightError::Bind(format!("invalid bind IP {ip_str}: {e}")))?
+        } else {
+            Self::read_iface_ip(iface)?
+        };
 
-        println!("[xpresso] AF_XDP: iface={iface} ifindex={ifindex} mac={:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ip={src_ip}",
-            src_mac[0], src_mac[1], src_mac[2], src_mac[3], src_mac[4], src_mac[5]);
+        println!(
+            "[xpresso] AF_XDP: iface={iface} ifindex={ifindex} mac={:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x} ip={src_ip}",
+            src_mac[0], src_mac[1], src_mac[2], src_mac[3], src_mac[4], src_mac[5]
+        );
 
         // 2. UMEM 할당
         let umem = Umem::new(frame_count, frame_size)?;
-        println!("[xpresso] AF_XDP: UMEM allocated {}KB ({frame_count} x {frame_size}B frames)",
-            umem.size / 1024);
+        println!(
+            "[xpresso] AF_XDP: UMEM allocated {}KB ({frame_count} x {frame_size}B frames)",
+            umem.size / 1024
+        );
 
         // 3. AF_XDP 소켓 생성
         let socket = XskSocket::new()?;
@@ -153,7 +165,10 @@ impl PlatformBackend for AfXdpBackend {
             .filter_map(|_| frame_alloc.alloc())
             .collect();
         fill_ring.produce_batch(&addrs);
-        println!("[xpresso] AF_XDP: fill ring initialized with {} frames", addrs.len());
+        println!(
+            "[xpresso] AF_XDP: fill ring initialized with {} frames",
+            addrs.len()
+        );
 
         Ok(Self {
             socket,
@@ -180,15 +195,14 @@ impl PlatformBackend for AfXdpBackend {
         self.reclaim_completed();
 
         // 프레임 할당
-        let frame_addr = inner.frame_alloc.alloc()
+        let frame_addr = inner
+            .frame_alloc
+            .alloc()
             .ok_or_else(|| FlightError::Send("UMEM full: no free frames".into()))?;
 
         // 프레임에 Ethernet + IPv4 + UDP 패킷 구성
         let frame_buf = unsafe {
-            std::slice::from_raw_parts_mut(
-                self.umem.frame_ptr(frame_addr),
-                self.umem.frame_size,
-            )
+            std::slice::from_raw_parts_mut(self.umem.frame_ptr(frame_addr), self.umem.frame_size)
         };
 
         let (dst_ip, dst_port) = match dest {
@@ -237,10 +251,7 @@ impl PlatformBackend for AfXdpBackend {
             // RX Ring에서 패킷 확인
             if let Some(desc) = inner.rx_ring.consume() {
                 let frame = unsafe {
-                    std::slice::from_raw_parts(
-                        self.umem.frame_ptr(desc.addr),
-                        desc.len as usize,
-                    )
+                    std::slice::from_raw_parts(self.umem.frame_ptr(desc.addr), desc.len as usize)
                 };
 
                 // 패킷 파싱
@@ -266,11 +277,17 @@ impl PlatformBackend for AfXdpBackend {
     }
 
     fn local_addr(&self) -> Result<SocketAddr, FlightError> {
-        Ok(SocketAddr::V4(SocketAddrV4::new(self.src_ip, self.src_port)))
+        Ok(SocketAddr::V4(SocketAddrV4::new(
+            self.src_ip,
+            self.src_port,
+        )))
     }
 
     fn close(&mut self) -> Result<(), FlightError> {
-        println!("[xpresso] AF_XDP: closing socket on ifindex={}", self.ifindex);
+        println!(
+            "[xpresso] AF_XDP: closing socket on ifindex={}",
+            self.ifindex
+        );
         // XdpHandle, XskSocket, Umem 모두 Drop에서 정리됨
         Ok(())
     }

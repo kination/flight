@@ -62,11 +62,7 @@ pub fn run_echo_server(interface_name: &str) -> std::io::Result<()> {
     }
 }
 
-fn handle_ipv4(
-    raw: &[u8],
-    eth: &EthernetPacket,
-    tx: &mut Box<dyn pnet::datalink::DataLinkSender>,
-) {
+fn handle_ipv4(raw: &[u8], eth: &EthernetPacket, tx: &mut Box<dyn pnet::datalink::DataLinkSender>) {
     let Some(ip) = Ipv4Packet::new(eth.payload()) else {
         return;
     };
@@ -74,7 +70,10 @@ fn handle_ipv4(
     let dst = ip.get_destination();
 
     if src.to_string() != "0.0.0.0" && dst.to_string() != "255.255.255.255" {
-        println!("  -> IPv4: {src} -> {dst}, Proto: {:?}", ip.get_next_level_protocol());
+        println!(
+            "  -> IPv4: {src} -> {dst}, Proto: {:?}",
+            ip.get_next_level_protocol()
+        );
     }
 
     if ip.get_next_level_protocol() != IpNextHeaderProtocols::Icmp {
