@@ -1,7 +1,7 @@
 use std::net::{SocketAddr, UdpSocket};
 
-use crate::error::FlightError;
 use super::{PlatformBackend, PlatformConfig};
+use crate::error::FlightError;
 
 pub struct FallbackBackend {
     socket: UdpSocket,
@@ -9,9 +9,10 @@ pub struct FallbackBackend {
 
 impl PlatformBackend for FallbackBackend {
     fn bind(config: &PlatformConfig) -> Result<Self, FlightError> {
-        let addr = format!("0.0.0.0:{}", config.port);
-        let socket = UdpSocket::bind(&addr)
-            .map_err(|e| FlightError::Bind(format!("{addr}: {e}")))?;
+        let bind_ip = config.bind_ip.as_deref().unwrap_or("0.0.0.0");
+        let addr = format!("{}:{}", bind_ip, config.port);
+        let socket =
+            UdpSocket::bind(&addr).map_err(|e| FlightError::Bind(format!("{addr}: {e}")))?;
         Ok(Self { socket })
     }
 
@@ -22,7 +23,8 @@ impl PlatformBackend for FallbackBackend {
     }
 
     fn receive(&self, buf: &mut [u8]) -> Result<(SocketAddr, usize), FlightError> {
-        let (n, from) = self.socket
+        let (n, from) = self
+            .socket
             .recv_from(buf)
             .map_err(|e| FlightError::Recv(e.to_string()))?;
         Ok((from, n))

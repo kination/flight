@@ -6,7 +6,6 @@ use crate::error::FlightError;
 use crate::platform::{NativeBackend, PlatformBackend};
 use crate::stats::Stats;
 
-
 pub struct Program {
     context: Context,
     backend: Option<NativeBackend>,
@@ -27,7 +26,10 @@ impl Program {
         let backend = NativeBackend::bind(&config)?;
 
         let local = backend.local_addr()?;
-        println!("[xpresso] attached on {local} (mode: {:?})", self.context.mode);
+        println!(
+            "[xpresso] attached on {local} (mode: {:?})",
+            self.context.mode
+        );
 
         self.backend = Some(backend);
         Ok(())
@@ -111,7 +113,9 @@ impl Program {
         self.context.rules.iter().any(|rule| match rule {
             Rule::AllowCidr(cidr) => {
                 if let Some(prefix) = cidr.split('/').next() {
-                    addr.ip().to_string().starts_with(prefix.trim_end_matches(".0"))
+                    addr.ip()
+                        .to_string()
+                        .starts_with(prefix.trim_end_matches(".0"))
                 } else {
                     false
                 }

@@ -1,7 +1,6 @@
 use std::fmt;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-
 pub struct Stats {
     pub(crate) tx_packets: AtomicU64,
     pub(crate) rx_packets: AtomicU64,

@@ -7,9 +7,7 @@ pub struct FrameAllocator {
 
 impl FrameAllocator {
     pub fn new(frame_count: usize, frame_size: usize) -> Self {
-        let free = (0..frame_count)
-            .map(|i| (i * frame_size) as u64)
-            .collect();
+        let free = (0..frame_count).map(|i| (i * frame_size) as u64).collect();
         Self { free }
     }
 

@@ -1,0 +1,30 @@
+FROM rust:latest AS base
+
+WORKDIR /usr/src/xpresso
+
+# Install deps
+RUN apt-get update && apt-get install -y \
+    llvm \
+    clang \
+    libclang-dev \
+    libbpf-dev \
+    linux-headers-generic \
+    gcc \
+    make \
+    iproute2 \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install nightly for eBPF and bpf-linker
+RUN rustup toolchain install nightly --component rust-src \
+    && cargo install bpf-linker \
+    && cargo install cargo-nextest --locked
+
+# Final stage: copy source on top of cached base
+FROM base
+# CACHE_BUST invalidates this layer on every run so source changes are always picked up.
+ARG CACHE_BUST
+COPY . .
+
+# Build eBPF then run tests
+CMD ["/bin/bash", "-c", "cd xpresso-ebpf && cargo +nightly build --release --target=bpfel-unknown-none -Z build-std=core && cd .. && cargo test --workspace"]
