@@ -15,7 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rust-src
       - uses: dtolnay/rust-toolchain@stable
+      - name: Build eBPF
+        run: cargo +nightly build --release --target=bpfel-unknown-none -Z build-std=core
+        working-directory: xpresso-ebpf
       - name: Cargo Check
         run: cargo check --workspace
 
@@ -35,6 +41,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rust-src
       - uses: dtolnay/rust-toolchain@stable
+      - name: Build eBPF
+        run: cargo +nightly build --release --target=bpfel-unknown-none -Z build-std=core
+        working-directory: xpresso-ebpf
       - name: Cargo Test
         run: cargo test --workspace

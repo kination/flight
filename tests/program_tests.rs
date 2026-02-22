@@ -39,7 +39,10 @@ fn try_make_attached(mode: Mode) -> Option<AttachedProgram> {
     ctx.set_port(0);
     let mut prog = Program::with_context(ctx).ok()?;
     prog.attach().ok()?;
-    Some(AttachedProgram { prog, _guard: guard })
+    Some(AttachedProgram {
+        prog,
+        _guard: guard,
+    })
 }
 
 macro_rules! require_attached {
