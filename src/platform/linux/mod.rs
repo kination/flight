@@ -65,24 +65,37 @@ impl AfXdpBackend {
         Ok(mac)
     }
 
-    /// 인터페이스의 IPv4 주소를 읽는다.
+    /// 인터페이스의 IPv4 주소를 읽는다. (SIOCGIFADDR ioctl 사용)
     fn read_iface_ip(iface: &str) -> Result<Ipv4Addr, FlightError> {
-        // ip -4 addr show <iface> 에서 파싱
-        let output = std::process::Command::new("ip")
-            .args(["-4", "-o", "addr", "show", iface])
-            .output()
-            .map_err(|e| FlightError::Bind(format!("ip addr show: {e}")))?;
-
-        let text = String::from_utf8_lossy(&output.stdout);
-        // "2: veth0    inet 10.0.0.1/24 ..."
-        for word in text.split_whitespace() {
-            if let Some(ip_str) = word.split('/').next() {
-                if let Ok(ip) = ip_str.parse::<Ipv4Addr>() {
-                    return Ok(ip);
-                }
+        unsafe {
+            let fd = libc::socket(libc::AF_INET, libc::SOCK_DGRAM, 0);
+            if fd < 0 {
+                return Err(FlightError::Bind("failed to open socket for ioctl".into()));
             }
+
+            let mut ifr: libc::ifreq = std::mem::zeroed();
+            let iface_bytes = iface.as_bytes();
+            if iface_bytes.len() >= libc::IFNAMSIZ {
+                libc::close(fd);
+                return Err(FlightError::Bind("interface name too long".into()));
+            }
+            for (i, &b) in iface_bytes.iter().enumerate() {
+                ifr.ifr_name[i] = b as i8;
+            }
+
+            if libc::ioctl(fd, libc::SIOCGIFADDR, &mut ifr) < 0 {
+                libc::close(fd);
+                return Err(FlightError::Bind(format!(
+                    "ioctl(SIOCGIFADDR) failed for {iface}: {}",
+                    std::io::Error::last_os_error()
+                )));
+            }
+
+            libc::close(fd);
+
+            let addr = *(ifr.ifr_ifru.ifru_addr as *const libc::sockaddr_in);
+            Ok(Ipv4Addr::from(u32::from_be(addr.sin_addr.s_addr)))
         }
-        Err(FlightError::Bind(format!("no IPv4 address on {iface}")))
     }
 
     /// Completion Ring에서 완료된 프레임을 회수하여 FrameAllocator에 반환한다.

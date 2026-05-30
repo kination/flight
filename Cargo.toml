@@ -1,18 +1,25 @@
 [workspace]
 members = ["sample-test/xpresso-echo"]
 exclude = ["xpresso-ebpf"]
-# xpresso-ebpf is NOT a workspace member.
-# It must be compiled separately for the bpfel-unknown-none target.
-# See build.sh for instructions.
 
 [package]
 name = "xpresso"
 version = "0.0.1"
 edition = "2024"
+rust-version = "1.85"
+description = "A high-performance Linux-primary, AF_XDP-backed unreliable datagram socket with XDP-based filtering."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/kination/xpresso"
+authors = ["kination <kination@users.noreply.github.com>"]
+readme = "README.md"
+keywords = ["xdp", "af_xdp", "networking", "bpf", "udp"]
+categories = ["network-programming", "os::linux-apis"]
 
 [dependencies]
 pnet = "0.34.0"
 serde = { version = "1.0.228", features = ["derive"] }
+thiserror = "1.0"
+tokio = { version = "1.35", features = ["full"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 aya = "0.13"

@@ -1,8 +1,10 @@
 # Xpresso (work in progress)
 
-Xpresso is a high-performance kernel-bypass networking library built with Rust. It provides a simple `Context → Program → send/recv` API, with goal of supporting XDP/AF_XDP on Linux and Skywalk(or BPF?) on macOS.
+Xpresso is a Linux-primary Rust crate that takes the kernel out of the UDP datapath. It is an **AF_XDP-backed unreliable datagram socket** with an in-kernel **XDP filter/policy control plane** (runtime-mutable drop/pass/redirect rules). The goal is narrow: fewer syscalls and fewer copies than a standard `recvfrom`/`sendto` UDP socket, while the bytes on the wire stay ordinary UDP.
 
-Currently uses a UDP socket fallback backend, so examples run on any OS without root.
+It is not a transport protocol. The core provides no reliability, ordering, congestion control, or encryption, and it does not replace QUIC — if you need a reliable encrypted stream, use `quinn`. For the full positioning and a packet-by-packet comparison of the standard UDP datapath vs the AF_XDP datapath, see [`docs/DESIGN.md`](docs/DESIGN.md) and [`docs/BLOG_UDP_DATAPATH_VS_AFXDP.md`](docs/BLOG_UDP_DATAPATH_VS_AFXDP.md).
+
+**Platforms:** kernel bypass is **Linux only**. macOS uses a plain `UdpSocket` fallback (same wire format, **no kernel bypass**) so examples build and run anywhere without root — it is a development convenience, not a performance backend.
 
 ## Prerequisites
 

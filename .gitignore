@@ -1,4 +1,11 @@
+
+/.agent
+/.claude
+/.gemini
+/.vscode
+
 /target
 /xpresso-ebpf/target
 
 /.internal-doc
+/docs
