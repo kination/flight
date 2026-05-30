@@ -109,19 +109,11 @@ impl Program {
         })
     }
 
-    fn matches_allow_rule(&self, addr: &SocketAddr) -> bool {
-        self.context.rules.iter().any(|rule| match rule {
-            Rule::AllowCidr(cidr) => {
-                if let Some(prefix) = cidr.split('/').next() {
-                    addr.ip()
-                        .to_string()
-                        .starts_with(prefix.trim_end_matches(".0"))
-                } else {
-                    false
-                }
-            }
-            _ => false,
-        })
+    fn matches_allow_rule(&self, _addr: &SocketAddr) -> bool {
+        // CIDR matching intentionally unimplemented. The prior `starts_with`-based
+        // match produced false positives (e.g. 192.168.1.0/24 matching 192.168.10.1).
+        // Proper implementation will use `ipnet::IpNet::contains` (see docs/DESIGN.md §3.4).
+        false
     }
 }
 
