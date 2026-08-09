@@ -2,7 +2,7 @@
 
 Xpresso is a Linux-primary Rust crate that takes the kernel out of the UDP datapath. It is an **AF_XDP-backed unreliable datagram socket** with an in-kernel **XDP filter/policy control plane** (runtime-mutable drop/pass/redirect rules). The goal is narrow: fewer syscalls and fewer copies than a standard `recvfrom`/`sendto` UDP socket, while the bytes on the wire stay ordinary UDP.
 
-It is not a transport protocol. The core provides no reliability, ordering, congestion control, or encryption, and it does not replace QUIC — if you need a reliable encrypted stream, use `quinn`. For the full positioning and a packet-by-packet comparison of the standard UDP datapath vs the AF_XDP datapath, see [`docs/DESIGN.md`](docs/DESIGN.md) and [`docs/BLOG_UDP_DATAPATH_VS_AFXDP.md`](docs/BLOG_UDP_DATAPATH_VS_AFXDP.md).
+It is not a transport protocol. The core provides no reliability, ordering, congestion control, or encryption, and it does not replace QUIC — if you need a reliable encrypted stream, use `quinn`. For the full positioning and a packet-by-packet comparison of the standard UDP datapath vs the AF_XDP datapath, see [`docs/DESIGN.md`](docs/DESIGN.md) §1.
 
 **Platforms:** kernel bypass is **Linux only**. macOS uses a plain `UdpSocket` fallback (same wire format, **no kernel bypass**) so examples build and run anywhere without root — it is a development convenience, not a performance backend.
 

@@ -7,19 +7,23 @@ name = "xpresso"
 version = "0.0.1"
 edition = "2024"
 rust-version = "1.85"
-description = "A high-performance Linux-primary, AF_XDP-backed unreliable datagram socket with XDP-based filtering."
-license = "MIT OR Apache-2.0"
+description = "AF_XDP-backed unreliable datagram socket with XDP-based filtering."
+license = "MIT"
 repository = "https://github.com/kination/xpresso"
 authors = ["kination <kination@users.noreply.github.com>"]
 readme = "README.md"
-keywords = ["xdp", "af_xdp", "networking", "bpf", "udp"]
-categories = ["network-programming", "os::linux-apis"]
+keywords = ["xdp", "afxdp", "networking"]
+categories = ["network-programming"]
 
 [dependencies]
 pnet = "0.34.0"
 serde = { version = "1.0.228", features = ["derive"] }
 thiserror = "1.0"
 tokio = { version = "1.35", features = ["full"] }
+
+[package.metadata.docs.rs]
+default-target = "x86_64-unknown-linux-gnu"
+rustdoc-args = ["--cfg", "docsrs"]
 
 [target.'cfg(target_os = "linux")'.dependencies]
 aya = "0.13"
